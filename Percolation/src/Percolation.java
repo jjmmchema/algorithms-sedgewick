@@ -3,7 +3,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
 
     private final int gridSize;
-    private final int noOfOpen;
+    private int noOfOpen;
     private final int virtualTopId;
     private final int virtualBotId;
     private final WeightedQuickUnionUF weightedQU;
@@ -25,18 +25,33 @@ public class Percolation {
         checkValidIdx(row, col);
         if (isOpen(row, col)) return;
 
-        if (col == 1) {
-            // Site doesn't have left neighbour
-        } else if (col == this.gridSize) {
-            // Site doesn't have right neighbour
+        int nodeId = map2dTo1d(row, col);
+
+        if (col != 1) {
+            int leftNode = map2dTo1d(row, col-1);
+            this.weightedQU.union(nodeId, leftNode);
+        }
+        if (col != this.gridSize) {
+            int rightNode = map2dTo1d(row, col-1);
+            this.weightedQU.union(nodeId, rightNode);
         }
 
-        if (row == 1) {
-            // Site doesn't have top neighbour
-        } else if (col == this.gridSize) {
-            // Site doesn't have bottom neighbour
+        // Assume that these are true at first
+        int topNode = virtualTopId;
+        int botNode = virtualBotId;
+
+        if (row != 1) {
+            topNode = map2dTo1d(row-1, col);;
+        }
+        if (row != this.gridSize) {
+            botNode = map2dTo1d(row+1, col);;
         }
 
+        this.weightedQU.union(nodeId, botNode);
+        this.weightedQU.union(nodeId, topNode);
+
+        this.state[nodeId-1] = true;
+        this.noOfOpen++;
     }
 
     public boolean isOpen(int row, int col) {
@@ -68,7 +83,22 @@ public class Percolation {
     }
 
     public static void main(String[] args) {
-        Percolation percolation = new Percolation(5);
+        Percolation percolation = new Percolation(1);
         System.out.println(percolation.percolates());
+        percolation.open(1, 1);
+        System.out.println(percolation.percolates());
+
+        percolation = new Percolation(3);
+        System.out.println(percolation.noOfOpen);
+        percolation.open(1, 1);
+        System.out.println(percolation.noOfOpen);
+        System.out.println(percolation.isOpen(1, 1));
+
+        System.out.println(percolation.percolates());
+        percolation.open(1, 2);
+        percolation.open(2, 2);
+        percolation.open(3, 2);
+        System.out.println(percolation.percolates());
+
     }
 }
